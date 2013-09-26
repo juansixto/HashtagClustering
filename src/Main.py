@@ -55,10 +55,10 @@ def changeCharacters(i):
     return i
     
 def extractHashtags(corpora):
+    dict = {}
     for sheet in corpora.sheets():
         for i in range(sheet.nrows):
             if "[{" in sheet.cell_value(i,22):
-                print "Item " ,sheet.cell_value(i,22)[2:len(sheet.cell_value(i,22))-2]
                 hashtags= (str(sheet.cell_value(i,22)[2:len(sheet.cell_value(i,22))-2]))
                 hashtags = hashtags.replace("u'","'").replace("'","\"")
 
@@ -66,15 +66,17 @@ def extractHashtags(corpora):
                     i =  "{"+i+"}"
                     i = i.decode("latin1")
                     i = changeCharacters(i)
-                    print i
-                    print repr(i)
-                    json.loads(i)
-                    #json.loads(fixed)
+                    myjson = json.loads(i)
+                    if(dict.get(myjson['text'],"no_exist") != "no_exist"):
+                        dict[myjson['text']] = dict[myjson['text']]+1
+                    else:
+                        dict[myjson['text']] = 1
+    for v, k in sorted(((v, k) for k, v in dict.items()), reverse=True):
+       print k+" - "+str(v)
+    return dict
                  
 
     
 if __name__ == '__main__':
-    loadCorpora()
-    prueba = '{"indices": [17, 29], "text": "inform\xe1tico"}'
-    print (prueba.decode("latin1"))
-    
+   dict =  loadCorpora()
+
