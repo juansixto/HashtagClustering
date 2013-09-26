@@ -51,6 +51,7 @@ def changeCharacters(i):
     i = i.replace("\\xeb", "e")
     i = i.replace("\\xf4", "o")
     i = i.replace("\\xc0", "E")
+    i = i.replace("\\xc7", "C")
     return i
     
 def extractHashtags(corpora):
