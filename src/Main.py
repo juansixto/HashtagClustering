@@ -7,9 +7,8 @@ Created on 25/09/2013
 import glob
 import xlrd
 import json
-import unicodedata
 
-
+corpora = []
 
 def loadCorpora():
     files =  glob.glob("../corpora/*.xls")
@@ -50,10 +49,14 @@ def changeCharacters(i):
     i = i.replace("\\xe4", "a")
     i = i.replace("\\xeb", "e")
     i = i.replace("\\xf4", "o")
+    i = i.replace("\\xf5", "o")
     i = i.replace("\\xc0", "E")
     i = i.replace("\\xc7", "C")
+    i = i.replace("\\xf6", "o")
+    i = i.replace("\\xef", "i")
+    i = i.replace("\\xc8", "E")
     return i
-    
+
 def extractHashtags(corpora):
     dict = {}
     for sheet in corpora.sheets():
@@ -66,6 +69,7 @@ def extractHashtags(corpora):
                     i =  "{"+i+"}"
                     i = i.decode("latin1")
                     i = changeCharacters(i)
+                    print i
                     myjson = json.loads(i)
                     if(dict.get(myjson['text'],"no_exist") != "no_exist"):
                         dict[myjson['text']] = dict[myjson['text']]+1
