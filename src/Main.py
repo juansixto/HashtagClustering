@@ -9,16 +9,18 @@ import xlrd
 import json
 
 corpora = []
+hashtag_dict = {}
+names_dict = {}
 
 def loadCorpora():
-    files =  glob.glob("../corpora/*.xls")
+    files =  glob.glob("../corpora/*.txt")
     for fileDir in files:
         print "Leyendo archivo "+fileDir
         loadFile(fileDir)
         
 
 def loadFile(fileDir):
-    corpora = xlrd.open_workbook(fileDir, encoding_override='latin1')
+    corpora = fileDir.
     print "Terminado de cargar archivo " + fileDir + " con " , corpora.nsheets , " hojas"
     extractHashtags(corpora)
 
@@ -55,29 +57,46 @@ def changeCharacters(i):
     i = i.replace("\\xf6", "o")
     i = i.replace("\\xef", "i")
     i = i.replace("\\xc8", "E")
+    i = i.replace("\\xdc", "U")
+    i = i.replace("\\xd8", "o")
+    i = i.replace("\\xd5", "o")
+    i = i.replace("\\xd2", "O")
+    i = i.replace("\\xc1", "A")
     return i
 
 def extractHashtags(corpora):
-    dict = {}
+    global hashtag_dict
     for sheet in corpora.sheets():
-        for i in range(sheet.nrows):
-            if "[{" in sheet.cell_value(i,22):
-                hashtags= (str(sheet.cell_value(i,22)[2:len(sheet.cell_value(i,22))-2]))
+        for j in range(sheet.nrows):
+            #Hashtag Extraction Begin ----------------------->
+            if "[{" in sheet.cell_value(j,22):
+                hashtags= (str(sheet.cell_value(j,22)[2:len(sheet.cell_value(j,22))-2]))
                 hashtags = hashtags.replace("u'","'").replace("'","\"")
-
                 for i in hashtags.split("}, {"):
                     i =  "{"+i+"}"
                     i = i.decode("latin1")
                     i = changeCharacters(i)
-                    print i
+                    i = i.lower()
                     myjson = json.loads(i)
-                    if(dict.get(myjson['text'],"no_exist") != "no_exist"):
-                        dict[myjson['text']] = dict[myjson['text']]+1
+                    if(hashtag_dict.get(myjson['text'],"no_exist") != "no_exist"):
+                        hashtag_dict[myjson['text']] = hashtag_dict[myjson['text']]+1
                     else:
-                        dict[myjson['text']] = 1
-    for v, k in sorted(((v, k) for k, v in dict.items()), reverse=True):
+                        hashtag_dict[myjson['text']] = 1
+            #Hashtag Extraction End -------------------------------->
+            #Users Extraction Begin ---------------------------->
+            user = sheet.cell_value(j,18)
+            user = changeCharacters(user)
+            if(names_dict.get(user,"no_exist") != "no_exist"):
+                names_dict[user] = names_dict[user] +1
+            else:
+                names_dict[user] = 1
+            #Users Extraction End ----------------------------------->
+    for v, k in sorted(((v, k) for k, v in hashtag_dict.items()), reverse=True)[0:30]:
        print k+" - "+str(v)
-    return dict
+    for v, k in sorted(((v, k) for k, v in names_dict.items()), reverse=True)[0:30]:
+       print k+" - "+str(v)
+
+    return hashtag_dict
                  
 
     
