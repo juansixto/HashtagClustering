@@ -46,12 +46,15 @@ def loadFile(fileDir):
         linea = linea.lower()
         myjson = json.loads(linea)
         tweet_dict.append(myjson)
-        js2 = myjson['entities']['hashtags']
-        for item in js2:
-            if(hashtag_dict.get(item['text'],"no_exist") != "no_exist"):
-                hashtag_dict[item['text']] = hashtag_dict[item['text']]+1
-            else:
-                hashtag_dict[item['text']] = 1
+        try:
+            js2 = myjson['entities']['hashtags']
+            for item in js2:
+                if(hashtag_dict.get(item['text'],"no_exist") != "no_exist"):
+                    hashtag_dict[item['text']] = hashtag_dict[item['text']]+1
+                else:
+                    hashtag_dict[item['text']] = 1
+        except:
+            pass
     for v, k in sorted(((v, k) for k, v in hashtag_dict.items()), reverse=True)[0:20]:
         writeLog(k+" - "+str(v))
     f.close()
