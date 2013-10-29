@@ -13,7 +13,7 @@ def initLog():
     global log_file
     try:
     # This tries to open an existing file but creates a new file if necessary.
-        log_file = open("HashtagMetrics.txt", "a")
+        log_file = open("TuitsPerHourMetric.txt", "a")
         log_file.write('Log Started At : '+str(datetime.datetime.now())+"\n")
     except IOError:
         pass
@@ -61,7 +61,7 @@ def processTweet(line):
     linea = linea.lower()
     try:
         myjson = json.loads(linea)
-        extractHashtags(myjson)
+        extractTimes(myjson)
     except:
         pass
 
@@ -69,15 +69,14 @@ def processTweet(line):
 # END CORPORA PROCESS ==================================================================================
 # TWEET PROCESS ========================================================================================
 
-def extractHashtags(myjson):
+def extractTimes(myjson):
     global hashtag_dict
     try:
-        js2 = myjson['entities']['hashtags']
-        for item in js2:
-            if(hashtag_dict.get(item['text'],"no_exist") != "no_exist"):
-                hashtag_dict[item['text']] = hashtag_dict[item['text']]+1
-            else:
-                hashtag_dict[item['text']] = 1
+        js2 = myjson['created_at'][:13]
+        if(hashtag_dict.get(js2,"no_exist") != "no_exist"):
+            hashtag_dict[js2] = hashtag_dict[js2]+1
+        else:
+            hashtag_dict[js2] = 1
     except:
         pass
 # END TWEET PROCESS ====================================================================================
