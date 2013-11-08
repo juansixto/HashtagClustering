@@ -6,6 +6,7 @@ import json
 log_file = None
 tweet_count = 0
 hashtag_dict = {}
+fileLog = ""
 
 # LOG PROCESS ==========================================================================================
 
@@ -13,7 +14,9 @@ def initLog():
     global log_file
     try:
     # This tries to open an existing file but creates a new file if necessary.
-        log_file = open("HashtagRelations.txt", "a")
+        name = "Log_"+fileLog[26:]
+        print name
+        log_file = open(name, "a")
         #log_file.write('Log Started At : '+str(datetime.datetime.now())+"\n")
     except IOError:
         pass
@@ -39,11 +42,14 @@ def closeLog():
 # END LOG PROCESS =======================================================================================
 # CORPORA PROCESS =======================================================================================
 def loadCorpora():
-    global hashtag_dict
+    global hashtag_dict, fileLog
     files =  glob.glob("../corpora/*.txt")
     for fileDir in files:
+        fileLog = fileDir
+        initLog()
         writeLog("Leyendo archivo "+fileDir)
         loadFile(fileDir)
+        closeLog()
     saveDict(hashtag_dict)
 
 def loadFile(fileDir):
@@ -75,26 +81,15 @@ def processTweet(line):
 def extractRelations(myjson):
     try:
         hashtags = myjson['entities']['hashtags']
+        user = myjson['user']['name']
         if len(hashtags)>1:
                 for i,item in enumerate(hashtags):
                     for item2 in hashtags[i+1:]:
-                        if item['text']>item['text']:
-                            itemA = item
-                            itemB = item2
-                        else:
-                            itemB = item
-                            itemA = item2
-                        relation = (str(itemA['text'].encode('utf-8', 'ignore')+","+itemB['text'].encode('utf-8', 'ignore')))
-                        if(hashtag_dict.get(relation,"no_exist") != "no_exist"):
-                            hashtag_dict[relation] = hashtag_dict[relation]+1
-                        else:
-                            hashtag_dict[relation] = 1
+                        writeLog(str(item['text'].encode('utf-8', 'ignore')+","+item2['text'].encode('utf-8', 'ignore')))
     except:
         pass
 
 # END TWEET PROCESS ====================================================================================
 # MAIN PROCESS =========================================================================================
 if __name__ == '__main__':
-    initLog()
     loadCorpora()
-    closeLog()

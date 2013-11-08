@@ -2,10 +2,12 @@ __author__ = 'juan'
 import datetime
 import glob
 import json
+import sys
 
 log_file = None
 tweet_count = 0
 hashtag_dict = {}
+hashtag_filter = "shutdown"
 
 # LOG PROCESS ==========================================================================================
 
@@ -13,8 +15,9 @@ def initLog():
     global log_file
     try:
     # This tries to open an existing file but creates a new file if necessary.
-        log_file = open("HashtagRelations.txt", "a")
-        #log_file.write('Log Started At : '+str(datetime.datetime.now())+"\n")
+        log_title = "HashtagTimeFreq"+hashtag_filter+".txt"
+        log_file = open(log_title, "a")
+        log_file.write('Log Started At : '+str(datetime.datetime.now())+"\n")
     except IOError:
         pass
 
@@ -26,10 +29,7 @@ def writeLog(line):
 
 def saveDict(dictionary):
     for v, k in sorted(((v, k) for k, v in dictionary.items()), reverse=True):
-        try:
-            writeLog(str(k.encode('utf-8', 'ignore')+" : "+str(v).encode('utf-8', 'ignore')))
-        except:
-            print "Error printing: ", k, " + " , v
+        writeLog(str(k.encode('utf-8', 'ignore')+" : "+str(v).encode('utf-8', 'ignore')))
 
 def closeLog():
     log_file.write('Log Finished At : '+str(datetime.datetime.now())+"\n")
@@ -64,7 +64,14 @@ def processTweet(line):
     linea = linea.lower()
     try:
         myjson = json.loads(linea)
-        extractRelations(myjson)
+        hashtags = myjson['entities']['hashtags']
+        isHashtag = False
+        for item in hashtags:
+            if item['text'] == hashtag_filter:
+                isHashtag = True
+        if isHashtag:
+            print hashtags
+            extractTimes(myjson)
     except:
         pass
 
@@ -72,29 +79,21 @@ def processTweet(line):
 # END CORPORA PROCESS ==================================================================================
 # TWEET PROCESS ========================================================================================
 
-def extractRelations(myjson):
+def extractTimes(myjson):
+    global hashtag_dict
     try:
-        hashtags = myjson['entities']['hashtags']
-        if len(hashtags)>1:
-                for i,item in enumerate(hashtags):
-                    for item2 in hashtags[i+1:]:
-                        if item['text']>item['text']:
-                            itemA = item
-                            itemB = item2
-                        else:
-                            itemB = item
-                            itemA = item2
-                        relation = (str(itemA['text'].encode('utf-8', 'ignore')+","+itemB['text'].encode('utf-8', 'ignore')))
-                        if(hashtag_dict.get(relation,"no_exist") != "no_exist"):
-                            hashtag_dict[relation] = hashtag_dict[relation]+1
-                        else:
-                            hashtag_dict[relation] = 1
+        js2 = myjson['created_at'][:13]
+        if(hashtag_dict.get(js2,"no_exist") != "no_exist"):
+            hashtag_dict[js2] = hashtag_dict[js2]+1
+        else:
+            hashtag_dict[js2] = 1
     except:
         pass
 
 # END TWEET PROCESS ====================================================================================
 # MAIN PROCESS =========================================================================================
 if __name__ == '__main__':
+    hashtag_filter = sys.argv[1]
     initLog()
     loadCorpora()
     closeLog()
